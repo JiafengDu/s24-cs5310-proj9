@@ -34,7 +34,7 @@ typedef struct {
 
 // Point and Vector Structures
 typedef struct {
-    double val[4]; // Four-element vector of doubles
+    float val[4]; // Four-element vector of doubles
 } Point;
 
 typedef Point Vector;

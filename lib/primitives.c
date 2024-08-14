@@ -1402,7 +1402,7 @@ void polygon_zBuffer(Polygon *p, int flag)
 void polygon_copy(Polygon *to, Polygon *from)
 {
     polygon_clear(to);
-    polygon_setAll(to, from->nVertex, from->vertex, from->color, NULL, from->zBuffer, from->oneSided);
+    polygon_setAll(to, from->nVertex, from->vertex, from->color, from->normal, from->zBuffer, from->oneSided);
 }
 
 /***
