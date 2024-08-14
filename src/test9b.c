@@ -393,7 +393,7 @@ int main(int argc, char *argv[]) {
   // draw into the scene
   module_draw( scene, &vtm, &gtm, ds, light, src );
 
-  image_write( src, "test9b.ppm" );
+  image_write( src, "../images/test9b.ppm" );
 
   polygon_clear( &p );
   module_delete( scene );

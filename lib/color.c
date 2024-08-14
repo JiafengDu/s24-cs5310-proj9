@@ -14,9 +14,13 @@
  */
 void color_copy(Color *to, Color *from)
 {
-    to->c[0] = from->c[0];
-    to->c[1] = from->c[1];
-    to->c[2] = from->c[2];
+    if (from) {
+        to->c[0] = from->c[0];
+        to->c[1] = from->c[1];
+        to->c[2] = from->c[2];
+    } else {
+        to = NULL;
+    }
 }
 
 /***

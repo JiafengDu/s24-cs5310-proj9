@@ -7,6 +7,7 @@
 #include "image.h"
 #include "color.h"
 
+#define MAX_LIGHTS 50
 
 // Node Structure for Stack and LinkedList
 typedef struct Node {
@@ -184,10 +185,27 @@ typedef struct {
     Point viewer; // A Point representing the view location in 3D (identical to the VRP in View3D)
 } DrawState;
 
-typedef struct {
-  int nLights;
-} Lighting;
+typedef enum {
+    LightNone,
+    LightAmbient,
+    LightDirect,
+    LightPoint,
+    LightSpot,
+} LightType;
 
+typedef struct {
+    LightType type;
+    Color color;
+    Vector direction;
+    Point position;
+    float cutoff; // stores the cosine of the cutoff angle of a spotlight
+    float sharpness; // coefficient of the falloff function (power for cosine)
+} Light;
+
+typedef struct {
+    int nLights;
+    Light light[MAX_LIGHTS];
+} Lighting;
 
 // Function prototypes
 Stack *stack_create(void);
@@ -301,7 +319,7 @@ void polygon_set(Polygon *p, int numV, Point *vlist);
 void polygon_clear(Polygon *p);
 void polygon_setSided(Polygon *p, int oneSided);
 void polygon_setColors(Polygon *p, int numV, Color *clist);
-void polygon_setNormals(Polygon *p, int numV, Vector *nlist);
+void polygon_setNormals(Polygon *p, int numV, Point *vlist);
 void polygon_setAll(Polygon *p, int numV, Point *vlist, Color *clist, Vector *nlist, int zBuffer, int oneSided);
 void polygon_zBuffer(Polygon *p, int flag);
 void polygon_copy(Polygon *to, Polygon *from);
@@ -309,9 +327,11 @@ void polygon_print(Polygon *p, FILE *fp);
 void polygon_normalize(Polygon *p);
 void polygon_draw(Polygon *p, Image *src, Color c);
 void polygon_drawShade(Polygon *p, Image *src, DrawState *ds, Lighting *light);
-void polygon_drawFill(Polygon *p, Image *src, Color c);
+void polygon_drawFill(Polygon *p, Image *src, Color c, Lighting *ls);
 void polygon_drawFillB(Polygon *p, Image *src, Color c);
 void polygon_drawFillAA(Polygon *p, Image *src, Color c);
+void polygon_shade(Polygon *p, DrawState *ds, Lighting *ls);
+
 
 /* Bezier Curve and Surface Functions*/
 void bezierCurve_init(BezierCurve *b);
@@ -374,7 +394,21 @@ void drawstate_setColor( DrawState *s, Color c );
 void drawstate_setBody( DrawState *s, Color c );
 void drawstate_setSurface( DrawState *s, Color c );
 void drawstate_setSurfaceCoeff( DrawState *s, float f );
+void drawstate_setShade( DrawState *ds, ShadeMethod s );
+void drawstate_setViewer( DrawState *s, Point *v);
 void drawstate_copy( DrawState *to, DrawState *from );
+
+/* Light Functions */
+void light_init(Light *l);
+void light_copy(Light *to, Light *from);
+
+/* Lighting Functions */
+Lighting *lighting_create( void );
+void lighting_delete(Lighting *lights);
+void lighting_init(Lighting *l);
+void lighting_clear(Lighting *l);
+void lighting_add(Lighting *l, LightType type, Color *c, Vector *d, Point *pos, float cutoff, float sharpness);
+void lighting_shading(Lighting *l, Vector *N, Vector *V, Point *p, Color *Cb, Color *Cs, float s, int oneSided, Color *c);
 
 /* Others */
 void fill(Image *src, Color f, double pixelx, double pixely);

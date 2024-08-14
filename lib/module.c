@@ -136,7 +136,6 @@ void module_module(Module *md, Module *sub) {
     if (e) module_insert(md, e);
 }
 
-
 /* Adds p to the tail of the module’s list. */
 void module_point(Module *md, Point *p) {
 	if (!md || !p) return;
@@ -275,7 +274,6 @@ void module_draw(Module *md, Matrix *VTM, Matrix *GTM, DrawState *ds, Lighting *
                 break;
             
             case ObjPoint: {
-				printf("drawing point obj\n");
                 Point temp;
                 matrix_xformPoint(&LTM, &e->obj.point, &temp);
                 matrix_xformPoint(GTM, &temp, &temp);
@@ -288,7 +286,6 @@ void module_draw(Module *md, Matrix *VTM, Matrix *GTM, DrawState *ds, Lighting *
             }
 
             case ObjLine: {
-				printf("drawing line obj\n");
                 Line temp;
 				line_copy(&temp, &e->obj.line);
                 matrix_xformLine(&LTM, &temp);
@@ -300,7 +297,6 @@ void module_draw(Module *md, Matrix *VTM, Matrix *GTM, DrawState *ds, Lighting *
             }
 
             case ObjPolyline: {
-				printf("drawing polyline obj\n");
                 Polyline temp;
 				polyline_init(&temp);
                 polyline_copy(&temp, &e->obj.polyline);
@@ -314,12 +310,16 @@ void module_draw(Module *md, Matrix *VTM, Matrix *GTM, DrawState *ds, Lighting *
             }
 
             case ObjPolygon: {
-				printf("drawing polygon obj\n");
                 Polygon temp;
 				polygon_init(&temp);
                 polygon_copy(&temp, &e->obj.polygon);
                 matrix_xformPolygon(&LTM, &temp);
                 matrix_xformPolygon(GTM, &temp);
+                
+                if (ds->shade == ShadeGouraud || ds->shade == ShadePhong) {
+                    printf("shading polygon\n");
+                    polygon_shade(&temp, ds, lighting);
+                }
                 matrix_xformPolygon(VTM, &temp);
                 polygon_normalize(&temp);
                 polygon_drawShade(&temp, src, ds, lighting);
@@ -328,8 +328,7 @@ void module_draw(Module *md, Matrix *VTM, Matrix *GTM, DrawState *ds, Lighting *
             }
 
 			case ObjBezierCurve: {
-				printf("drawing bezierCurve obj\n");
-				BezierCurve temp;
+				BezierCurve temp; 
 				bezierCurve_init(&temp);
 				bezierCurve_copy(&temp, &e->obj.bezierCurve);
 				matrix_xformBezierCurve(&LTM, &temp);
@@ -341,7 +340,6 @@ void module_draw(Module *md, Matrix *VTM, Matrix *GTM, DrawState *ds, Lighting *
 			}
 
 			case ObjBezierSurface: {
-				printf("drawing bezierSurface obj\n");
 				BezierSurface temp;
 				bezierSurface_init(&temp);
 				bezierSurface_copy(&temp, &e->obj.bezierSurface);
@@ -354,18 +352,15 @@ void module_draw(Module *md, Matrix *VTM, Matrix *GTM, DrawState *ds, Lighting *
 			}
 
             case ObjMatrix:
-				printf("drawing matrix obj\n");
                 matrix_multiply(&e->obj.matrix, &LTM, &LTM);
                 break;
 
 			case ObjIdentity: {
-				printf("drawing identity obj\n");
 				matrix_identity(&LTM);
 				break;
 			}
 
             case ObjModule: {
-				printf("drawing module obj\n");
                 Matrix GTMpass;
                 DrawState tempDS;
                 
@@ -376,7 +371,6 @@ void module_draw(Module *md, Matrix *VTM, Matrix *GTM, DrawState *ds, Lighting *
             }
 
             default:
-				printf("drawing other obj\n");
                 break;
         }
     }
@@ -487,6 +481,7 @@ void module_cube(Module *md, int solid) {
 	point_set3D( &pt[2], -0.5, 0.5, 0.5 );
 	point_set3D( &pt[3], -0.5, 0.5, -0.5);
 	polygon_set( &p, 4, pt );
+    polygon_setNormals( &p, 4, NULL);
 	module_polygon( md, &p );
 
 	point_set3D( &pt[0], 0.5, -0.5, -0.5 );
@@ -494,6 +489,7 @@ void module_cube(Module *md, int solid) {
 	point_set3D( &pt[2], 0.5, 0.5, 0.5);
 	point_set3D( &pt[3], 0.5, 0.5, -0.5);
 	polygon_set( &p, 4, pt );
+    polygon_setNormals( &p, 4, NULL);
 	module_polygon( md, &p );
 
 	point_set3D( &pt[0], -0.5, -0.5, -0.5 );
@@ -501,6 +497,7 @@ void module_cube(Module *md, int solid) {
 	point_set3D( &pt[2], 0.5, -0.5, 0.5 );
 	point_set3D( &pt[3], 0.5, -0.5, -0.5 );
 	polygon_set( &p, 4, pt );
+    polygon_setNormals( &p, 4, NULL);
 	module_polygon( md, &p );
 
 	point_set3D( &pt[0], -0.5, 0.5, -0.5 );
@@ -508,6 +505,7 @@ void module_cube(Module *md, int solid) {
 	point_set3D( &pt[2], 0.5, 0.5, 0.5 );
 	point_set3D( &pt[3], 0.5, 0.5, -0.5 );
 	polygon_set( &p, 4, pt );
+    polygon_setNormals( &p, 4, NULL);  
 	module_polygon( md, &p );
 
 	point_set3D( &pt[0], -0.5, -0.5, -0.5 );
@@ -515,6 +513,7 @@ void module_cube(Module *md, int solid) {
 	point_set3D( &pt[2], 0.5, 0.5, -0.5 );
 	point_set3D( &pt[3], 0.5, -0.5, -0.5 );
 	polygon_set( &p, 4, pt );
+    polygon_setNormals( &p, 4, NULL);
 	module_polygon( md, &p );
 
 	point_set3D( &pt[0], -0.5, -0.5, 0.5 );
@@ -522,6 +521,7 @@ void module_cube(Module *md, int solid) {
 	point_set3D( &pt[2], 0.5, 0.5, 0.5 );
 	point_set3D( &pt[3], 0.5, -0.5, 0.5);
 	polygon_set( &p, 4, pt );
+    polygon_setNormals( &p, 4, NULL);
 	module_polygon( md, &p );
   }
 }

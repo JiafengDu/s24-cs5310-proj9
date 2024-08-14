@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 		  image_setColor( src, i, j, c );
 	  }
   }
-  image_write( src, "test9d.ppm");
+  image_write( src, "../images/test9d.ppm");
 
   return(0);
 }

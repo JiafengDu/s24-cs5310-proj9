@@ -441,14 +441,19 @@ int image_write(Image *src, char *filename)
 
     if (fp)
     {
-        fprintf(fp, "PF\n");
-        fprintf(fp, "%d %d\n%f\n", src->cols, src->rows, -1.0); // 1.000 is set arbitrarily for now
+        fprintf(fp, "P6\n");
+        fprintf(fp, "%d %d\n255\n", src->cols, src->rows); // 1.000 is set arbitrarily for now
         for (int r = 0; r < src->rows; r++)
         {
             for (int c = 0; c < src->cols; c++)
             {
                 // fprintf(fp,"%f %f %f", src->data[r][c].rgb[0], src->data[r][c].rgb[1], src->data[r][c].rgb[2]);
-                fwrite(src->data[r][c].rgb, sizeof(float), 3, fp);
+                unsigned char data[3];
+                data[0] = src->data[r][c].rgb[0] > 1.0 ? 255 : (unsigned char)(src->data[r][c].rgb[0] * 255.0 + 0.5);
+                data[1] = src->data[r][c].rgb[1] > 1.0 ? 255 : (unsigned char)(src->data[r][c].rgb[1] * 255.0 + 0.5);
+                data[2] = src->data[r][c].rgb[2] > 1.0 ? 255 : (unsigned char)(src->data[r][c].rgb[2] * 255.0 + 0.5);
+                //fwrite(src->data[r][c].rgb, sizeof(float), 3, fp);
+                fwrite(data, sizeof(unsigned char), 3, fp);
             }
         }
     }

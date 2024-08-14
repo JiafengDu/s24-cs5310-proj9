@@ -251,7 +251,7 @@ void vector_set(Vector *v, double x, double y, double z)
  */
 void vector_print(Vector *v, FILE *fp)
 {
-	fprintf(fp, "vector (%f, %f, %f)\n", v->val[0], v->val[1], v->val[2]);
+	fprintf(fp, " [ %f, %f, %f ]\n", v->val[0], v->val[1], v->val[2]);
 }
 
 /***
@@ -259,9 +259,13 @@ void vector_print(Vector *v, FILE *fp)
  */
 void vector_copy(Vector *dest, Vector *src)
 {
-	dest->val[0] = src->val[0];
-	dest->val[1] = src->val[1];
-	dest->val[2] = src->val[2];
+	if (src) {
+		dest->val[0] = src->val[0];
+		dest->val[1] = src->val[1];
+		dest->val[2] = src->val[2];
+	} else {
+		dest = NULL;	
+	}
 }
 
 /***
@@ -731,16 +735,30 @@ void matrix_setView3D(Matrix *vtm, View3D *view)
 	vector_cross(&view->vup, &view->vpn, &u); // calculate u vector
 	vector_cross(&view->vpn, &u, &view->vup); // recalcula vup vector
 	matrix_translate(vtm, -view->vrp.val[0], -view->vrp.val[1], -view->vrp.val[2]); // translate vrp to origin
+	printf("After VRP translation\n");
+	matrix_print(vtm, stdout);
 	vector_normalize(&u);
 	vector_normalize(&view->vpn);
 	vector_normalize(&view->vup);
 	matrix_rotateXYZ(vtm, &u, &view->vup, &view->vpn); // orient view coordinate
-	matrix_translate(vtm, 0, 0, view->d); // move ccenter of projection to origin
+	printf("After Rxyz\n");
+	matrix_print(vtm, stdout);
+	matrix_translate(vtm, 0, 0, view->d); // move center of projection to origin
+	printf("After translating center of projection to origin\n");
+	matrix_print(vtm, stdout);
 	matrix_scale(vtm, (2 * view->d) / ((view->d + view->b) * view->du), (2 * view->d) / ((view->d + view->b) * view->dv), 1 / (view->d + view->b)); // scale to canonical view volume
+	printf("After scaling to canonical view volume\n");
+	matrix_print(vtm, stdout);
 	matrix_perspective(vtm, view->d / (view->d + view->b));
+	printf("After perspective\n");
+	matrix_print(vtm, stdout);
 	dprime = view->d / (view->d + view->b);
 	matrix_scale(vtm, -view->screenx/(2*dprime), -view->screeny/(2*dprime), 1.0);
+	printf("After scaling to screen\n");
+	matrix_print(vtm, stdout);
 	matrix_translate2D(vtm, view->screenx/2, view->screeny/2);
+	printf("After translating to screen\n");
+	matrix_print(vtm, stdout);
 }
 
 /* DrawState Functions */
@@ -752,9 +770,9 @@ DrawState *drawstate_create( void ) {
         // Initialize with default values
         ds->color = (Color){{1.0, 1.0, 1.0}}; 
         ds->flatColor =(Color){{0.0, 0.0, 0.0}};
-        ds->body =(Color){{0.0, 0.0, 0.0}};
-        ds->surface = (Color){{0.0, 0.0, 0.0}}; 
-        ds->surfaceCoeff = 1.0f;
+        ds->body =(Color){{0.7, 0.7, 0.7}};
+        ds->surface = (Color){{0.1, 0.1, 0.1}}; 
+        ds->surfaceCoeff = 10.0f;
         ds->shade = ShadeFrame;  // Default to frame shading
         ds->zBufferFlag = 1;  // Enable z-buffer by default
         ds->viewer = (Point){{0.0, 0.0, 0.0, 1.0}};  // Viewer at origin
@@ -788,6 +806,20 @@ void drawstate_setSurfaceCoeff( DrawState *s, float f ) {
 	if (s) {
         s->surfaceCoeff = f;
     }
+}
+
+/* set the shade field to s. */
+void drawstate_setShade( DrawState *ds, ShadeMethod s ) {
+	if (ds) {
+		ds->shade = s;
+	}
+}
+
+/* set the viewer field to v. */
+void drawstate_setViewer( DrawState *ds, Point *v ) {
+	if (ds) {
+		ds->viewer = *v;
+	}
 }
 
 /* copy the DrawState data. */
